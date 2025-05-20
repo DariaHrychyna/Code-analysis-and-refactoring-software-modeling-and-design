@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <title>Books by the author {{ author }}</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Bad+Script&display=swap');
+        body {
+            margin: 0;
+            font-family: BadScript, cursive;
+            background: linear-gradient(to right, #7baabb, #53b0ae);
+            color: #333;
+        }
+
+        header {
+            background-color: rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(4px);
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+
+        header a {
+            text-decoration: none;
+            color: white;
+            background-color: #008080;
+            padding: 10px 16px;
+            border-radius: 12px;
+            transition: background-color 0.3s ease;
+        }
+
+        header a:hover {
+            background-color: #006666;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 50px auto;
+            background: rgba(255, 255, 255, 0.85);
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 0 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .book-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: space-between;
+        }
+
+        .book-card {
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 0 8px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            width: 200px;
+            text-align: center;
+            padding: 10px;
+        }
+
+        .book-card img {
+            width: 100%;
+            height: 350px;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+
+        .book-info {
+            margin-top: 10px;
+            font-size: 14px;
+        }
+
+        button {
+            padding: 10px 20px;
+            background-color: #008080;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #006666;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>Book Recommender</h1>
+    <a href="{{ url_for('index') }}">Main</a>
+    <a href="{{ url_for('catalog') }}">Catalog</a>
+</header>
+
+<div class="container">
+    <form method="get" class="sort-form">
+            <label for="sort">Sort by:</label>
+            <select name="sort" id="sort" onchange="this.form.submit()">
+                <option value="title_asc" {% if sort == 'title_asc' %}selected{% endif %}>Name (A–Z)</option>
+                <option value="title_desc" {% if sort == 'title_desc' %}selected{% endif %}>Name (Z–A)</option>
+                <option value="year_desc" {% if sort == 'year_desc' %}selected{% endif %}>Year (↓)</option>
+                <option value="year_asc" {% if sort == 'year_asc' %}selected{% endif %}>Year (↑)</option>
+            </select>
+        </form>
+
+    <h2>Books by the author {{ author }}</h2>
+
+    <div class="book-list">
+        {% for book in books %}
+        <div class="book-card">
+            <img src="{{ book['Image-URL-L'] }}" alt="Cover" loading="lazy">
+            <div class="book-info">
+                <strong>{{ book['Book-Title'] }}</strong><br>
+                Year: {{ book['Year-Of-Publication'] }}<br>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+</body>
+</html>
