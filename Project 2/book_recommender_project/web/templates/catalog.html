@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <title>Каталог</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Bad+Script&display=swap');
+        body {
+            margin: 0;
+            font-family: BadScript, cursive;
+            background: linear-gradient(to right, #7baabb, #53b0ae);
+            color: #333;
+        }
+
+        header {
+            background-color: rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(4px);
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+
+        header a {
+            text-decoration: none;
+            color: white;
+            background-color: #008080;
+            padding: 10px 16px;
+            border-radius: 12px;
+            transition: background-color 0.3s ease;
+        }
+
+        header a:hover {
+            background-color: #006666;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 50px auto;
+            background: rgba(255, 255, 255, 0.85);
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 0 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .authors-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .author-card {
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 0 8px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            padding: 20px;
+        }
+
+        .author-card button {
+            padding: 10px 20px;
+            background-color: #008080;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .author-card button:hover {
+            background-color: #006666;
+        }
+
+        .author-card h3 {
+            margin: 0;
+        }
+
+        .author-card p {
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>Book Recommender</h1>
+    <a href="{{ url_for('index') }}">Main</a>
+</header>
+
+<div class="container">
+    <h2>List of authors ({{ total_authors }} unique)</h2>
+
+    <form method="get" class="sort-form">
+            <label for="sort">Sort by:</label>
+            <select name="sort" id="sort" onchange="this.form.submit()">
+                <option value="name_asc" {% if sort == 'name_asc' %}selected{% endif %}>Name (A–Z)</option>
+                <option value="name_desc" {% if sort == 'name_desc' %}selected{% endif %}>Name (Z–A)</option>
+                <option value="count_desc" {% if sort == 'count_desc' %}selected{% endif %}>Number of books (↓)</option>
+                <option value="count_asc" {% if sort == 'count_asc' %}selected{% endif %}>Number of books (↑)</option>
+            </select>
+        </form>
+
+    <div class="authors-grid">
+        {% for author in authors %}
+        <div class="author-card">
+            <h3>{{ author['Book-Author'] }}</h3>
+            <p>{{ author['Book-Count'] }} books</p>
+            <form action="{{ url_for('author_books', author_name=author['Book-Author']) }}" method="get">
+                <button type="submit">Show all books by this author</button>
+            </form>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+</body>
+</html>

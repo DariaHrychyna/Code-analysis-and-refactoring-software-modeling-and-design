@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <title>Book Recommender</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Bad+Script&display=swap');
+        body {
+            margin: 0;
+            font-family: BadScript, cursive;
+            background-image: url("{{ url_for('static', filename='background.jpg') }}");
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            color: #333;
+        }
+
+        header {
+            background-color: rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(4px);
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+
+        header a {
+            text-decoration: none;
+            color: white;
+            background-color: #008080;
+            padding: 10px 16px;
+            border-radius: 12px;
+            transition: background-color 0.3s ease;
+        }
+
+        header a:hover {
+            background-color: #006666;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 50px auto;
+            background: rgba(255, 255, 255, 0.85);
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 0 12px rgba(0, 0, 0, 0.1);
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        input[type="text"] {
+            padding: 12px;
+            font-size: 16px;
+            border-radius: 12px;
+            border: 1px solid #008080;
+            outline: none;
+        }
+
+        button {
+            padding: 12px;
+            font-size: 16px;
+            background-color: #008080;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #006666;
+        }
+
+        h2 {
+            margin-top: 30px;
+        }
+
+        ul, ol {
+            padding-left: 20px;
+        }
+
+        li {
+            margin-bottom: 8px;
+        }
+        .top-books-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+        gap: 20px;
+        margin-top: 20px;
+    }
+
+    .book-card {
+        background: #fff;
+        border-radius: 12px;
+        box-shadow: 0 0 8px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+        text-align: center;
+        padding: 10px;
+    }
+
+    .book-card img {
+        width: 100%;
+        height: 300px;
+        object-fit: cover;
+        border-radius: 8px;
+    }
+
+    .book-info {
+        margin-top: 10px;
+        font-size: 14px;
+    }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Book Recommender</h1>
+        <a href="{{ url_for('catalog') }}">Catalog</a>
+    </header>
+
+    <div class="container">
+        <h2>Enter the book title:</h2>
+        <form method="POST" autocomplete="off" id="search-form">
+            <input type="text" name="book_title" placeholder="For example: 1984" required>
+            <button type="submit">Get recommendations</button>
+            <ul id="suggestion-box" style="display: none;"></ul>
+        </form>
+
+        {% if recommendations %}
+            <h2>Recommendations for "{{ book_title }}":</h2>
+            <ul>
+                {% for book in recommendations %}
+                    <li>{{ book.title }}, {{ book.author }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+
+        {% if top_books %}
+        <h2>Top 20 books by rating:</h2>
+        <div class="top-books-grid">
+            {% for book in top_books %}
+                <div class="book-card">
+                    <img src="{{ book['Image-URL-L'] }}" alt="Cover" loading="lazy">
+                    <div class="book-info">
+                        <strong>{{ book['Book-Title'] }}</strong><br>
+                        <em>{{ book['Book-Author'] }}</em><br>
+                            {{ book['Book-Rating'] }}
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+</div>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const input = document.querySelector('input[name="book_title"]');
+        const suggestionBox = document.getElementById("suggestion-box");
+        suggestionBox.style.listStyle = "none";
+        suggestionBox.style.marginTop = "0";
+        suggestionBox.style.paddingLeft = "0";
+        suggestionBox.style.border = "1px solid #ccc";
+        suggestionBox.style.borderRadius = "8px";
+        suggestionBox.style.background = "#fff";
+        suggestionBox.style.position = "static";
+        suggestionBox.style.width = "100%";
+        suggestionBox.style.zIndex = "1000";
+        suggestionBox.style.maxHeight = "200px";
+        suggestionBox.style.overflowY = "auto";
+        suggestionBox.style.display = "none";
+
+        input.parentElement.appendChild(suggestionBox);
+
+        input.addEventListener("input", function() {
+            const query = input.value.trim();
+            if (query.length < 2) {
+                suggestionBox.style.display = "none";
+                return;
+            }
+
+            fetch(`/search_titles?q=${encodeURIComponent(query)}`)
+                .then(response => response.json())
+                .then(titles => {
+                    suggestionBox.innerHTML = "";
+                    if (titles.length > 0) {
+                        titles.forEach(title => {
+                            const item = document.createElement("li");
+                            item.textContent = title;
+                            item.style.padding = "8px";
+                            item.style.cursor = "pointer";
+                            item.addEventListener("click", () => {
+                                input.value = title;
+                                suggestionBox.style.display = "none";
+                            });
+                            suggestionBox.appendChild(item);
+                        });
+                        suggestionBox.style.display = "block";
+                    } else {
+                        suggestionBox.style.display = "none";
+                    }
+                });
+        });
+
+        document.addEventListener("click", (e) => {
+            if (!suggestionBox.contains(e.target) && e.target !== input) {
+                suggestionBox.style.display = "none";
+            }
+        });
+    });
+</script>
+</body>
+</html>
